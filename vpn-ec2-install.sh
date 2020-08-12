@@ -6,7 +6,8 @@ VPN_USER=username
 VPN_PASSWORD=password
  
 # Those two variables will be found automatically
-PRIVATE_IP=`wget -q -O - 'http://instance-data/latest/meta-data/local-ipv4'`
+#PRIVATE_IP=`wget -q -O - 'http://instance-data/latest/meta-data/local-ipv4'`
+PRIVATE_IP=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p'`
  
 #the following does not work in VPC
 #PUBLIC_IP=`wget -q -O - 'http://instance-data/latest/meta-data/public-ipv4'`
@@ -65,8 +66,8 @@ port = 1701
 ;debug tunnel = yes
 
 [lns default]
-ip range = 192.168.42.10-192.168.42.250
-local ip = 192.168.42.1
+ip range = 10.0.10.230-10.0.10.250
+local ip = 10.0.10.1
 require chap = yes
 refuse pap = yes
 require authentication = yes
@@ -98,7 +99,7 @@ cat > /etc/ppp/chap-secrets <<EOF
 $VPN_USER l2tpd $VPN_PASSWORD *
 EOF
  
-iptables -t nat -A POSTROUTING -s 192.168.42.0/24 -o eth0 -j MASQUERADE
+iptables -t nat -A POSTROUTING -s 10.0.10.0/24 -o eth0 -j MASQUERADE
 echo 1 > /proc/sys/net/ipv4/ip_forward
  
 iptables-save > /etc/iptables.rules
