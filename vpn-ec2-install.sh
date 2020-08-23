@@ -16,7 +16,7 @@ PRIVATE_IP=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-
 #
 PUBLIC_IP=`wget -q -O - 'checkip.amazonaws.com'`
  
-yum install -y --enablerepo=epel openswan xl2tpd
+yum install -y --enablerepo=epel openswan xl2tpd freeradius freeradius-mysql freeradius-utils net-tools
  
 cat > /etc/ipsec.conf <<EOF
 version 2.0
@@ -66,7 +66,7 @@ port = 1701
 ;debug tunnel = yes
 
 [lns default]
-ip range = 10.0.10.230-10.0.10.250
+ip range = 10.0.10.2-10.0.10.250
 local ip = 10.0.10.1
 require chap = yes
 refuse pap = yes
@@ -116,4 +116,7 @@ service ipsec start
 service xl2tpd start
 chkconfig ipsec on
 chkconfig xl2tpd on
+chkconfig radiusd on
+chkconfig mysql on
+
 
