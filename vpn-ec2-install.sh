@@ -4,6 +4,9 @@
 IPSEC_PSK=SharedSecret
 VPN_USER=username
 VPN_PASSWORD=password
+MYSQL_PASSWORD=$(pwgen -B 12 1)
+RAD_PASSWORD=$(pwgen -B 12 1)
+
  
 # Those two variables will be found automatically
 #PRIVATE_IP=`wget -q -O - 'http://instance-data/latest/meta-data/local-ipv4'`
@@ -16,7 +19,26 @@ PRIVATE_IP=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-
 #
 PUBLIC_IP=`wget -q -O - 'checkip.amazonaws.com'`
  
-yum install -y --enablerepo=epel openswan xl2tpd freeradius freeradius-mysql freeradius-utils net-tools
+yum install -y --enablerepo=epel openswan xl2tpd mysql-server freeradius freeradius-mysql freeradius-utils net-tools
+
+#Secure mysql
+service mysqld start
+/usr/libexec/mysql55/mysqladmin -u root password '$MYSQL_PASSWORD'
+cat > /root/.my.cnf <<EOF
+[client]
+user=root
+password=$MYSQL_PASSWORD
+EOF
+
+echo "create database radius default character set utf8;
+grant all privileges on radius.* to radius@localhost identified by '$RAD_PASSWORD';
+grant all privileges on radius.* to radius@'%' identified by '$RAD_PASSWORD';" | mysql
+
+sed -i 's|radpass|'"$RAD_PASSWORD"'|g' /etc/raddb/sql.conf
+
+wget https://www.dmosk.ru/files/dictionary.microsoft -O /usr/share/freeradius/dictionary.microsoft
+
+
  
 cat > /etc/ipsec.conf <<EOF
 version 2.0
@@ -114,9 +136,10 @@ EOF
  
 service ipsec start
 service xl2tpd start
+service radiusd start
 chkconfig ipsec on
 chkconfig xl2tpd on
 chkconfig radiusd on
-chkconfig mysql on
+chkconfig mysqld on
 
 
