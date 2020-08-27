@@ -1,6 +1,7 @@
 #!/bin/sh
- 
 # Please define your own values for those variables
+yum install -y --enablerepo=epel pwgen
+
 IPSEC_PSK=SharedSecret
 VPN_USER=username
 VPN_PASSWORD=password
