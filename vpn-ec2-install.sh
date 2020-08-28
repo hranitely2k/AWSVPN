@@ -7,6 +7,7 @@ VPN_USER=username
 VPN_PASSWORD=password
 MYSQL_PASSWORD=$(pwgen -B 12 1)
 RAD_PASSWORD=$(pwgen -B 12 1)
+HOSTNAME=$(hostname)
 
  
 # Those two variables will be found automatically
@@ -41,7 +42,7 @@ sed -i 's|radpass|'$RAD_PASSWORD'|g' /etc/raddb/sql.conf
 
 wget https://www.dmosk.ru/files/dictionary.microsoft -O /usr/share/freeradius/dictionary.microsoft
 
-
+echo '127.0.0.1 $HOSTNAME' >> /etc/hosts
  
 cat > /etc/ipsec.conf <<EOF
 version 2.0
