@@ -24,7 +24,7 @@ yum install -y --enablerepo=epel openswan xl2tpd mysql-server freeradius freerad
 
 #Secure mysql
 service mysqld start
-/usr/libexec/mysql55/mysqladmin -u root password '$MYSQL_PASSWORD'
+/usr/libexec/mysql55/mysqladmin -u root password $MYSQL_PASSWORD
 cat > /root/.my.cnf <<EOF
 [client]
 user=root
@@ -35,7 +35,9 @@ echo "create database radius default character set utf8;
 grant all privileges on radius.* to radius@localhost identified by '$RAD_PASSWORD';
 grant all privileges on radius.* to radius@'%' identified by '$RAD_PASSWORD';" | mysql
 
-sed -i 's|radpass|'"$RAD_PASSWORD"'|g' /etc/raddb/sql.conf
+mysql radius < /etc/raddb/sql/mysql/schema.sql
+
+sed -i 's|radpass|$RAD_PASSWORD|g' /etc/raddb/sql.conf
 
 wget https://www.dmosk.ru/files/dictionary.microsoft -O /usr/share/freeradius/dictionary.microsoft
 
