@@ -37,7 +37,7 @@ grant all privileges on radius.* to radius@'%' identified by '$RAD_PASSWORD';" |
 
 mysql radius < /etc/raddb/sql/mysql/schema.sql
 
-sed -i 's|radpass|$RAD_PASSWORD|g' /etc/raddb/sql.conf
+sed -i 's|radpass|'$RAD_PASSWORD'|g' /etc/raddb/sql.conf
 
 wget https://www.dmosk.ru/files/dictionary.microsoft -O /usr/share/freeradius/dictionary.microsoft
 
@@ -100,6 +100,8 @@ name = l2tpd
 ;ppp debug = yes
 pppoptfile = /etc/ppp/options.xl2tpd
 length bit = yes
+plugin radius.so
+plugin radattr.so
 EOF
  
 cat > /etc/ppp/options.xl2tpd <<EOF
