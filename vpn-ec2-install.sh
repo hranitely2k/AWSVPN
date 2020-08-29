@@ -8,7 +8,7 @@ VPN_PASSWORD=password
 MYSQL_PASSWORD=$(pwgen -B 12 1)
 RAD_PASSWORD=$(pwgen -B 12 1)
 HOSTNAME=$(hostname)
-
+RADSRV_PASSWORD=$(pwgen -B 12 1)
  
 # Those two variables will be found automatically
 #PRIVATE_IP=`wget -q -O - 'http://instance-data/latest/meta-data/local-ipv4'`
@@ -21,7 +21,7 @@ PRIVATE_IP=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-
 #
 PUBLIC_IP=`wget -q -O - 'checkip.amazonaws.com'`
  
-yum install -y --enablerepo=epel openswan xl2tpd mysql-server freeradius freeradius-mysql freeradius-utils net-tools
+yum install -y --enablerepo=epel openswan xl2tpd mysql-server freeradius freeradius-mysql freeradius-utils net-tools radiusclient-ng
 
 #Secure mysql
 service mysqld start
@@ -32,17 +32,29 @@ user=root
 password=$MYSQL_PASSWORD
 EOF
 
-echo "create database radius default character set utf8;
-grant all privileges on radius.* to radius@localhost identified by '$RAD_PASSWORD';
-grant all privileges on radius.* to radius@'%' identified by '$RAD_PASSWORD';" | mysql
-
+#Radius
+mysql -e "create database radius default character set utf8;"
+mysql -e "grant all privileges on radius.* to radius@localhost identified by '$RAD_PASSWORD';"
+mysql -e "grant all privileges on radius.* to radius@'%' identified by '$RAD_PASSWORD';"
 mysql radius < /etc/raddb/sql/mysql/schema.sql
-
 sed -i 's|radpass|'$RAD_PASSWORD'|g' /etc/raddb/sql.conf
-
+sed -i 's|testing123|'$RADSRV_PASSWORD'|g' /etc/raddb/clients.conf
 wget https://www.dmosk.ru/files/dictionary.microsoft -O /usr/share/freeradius/dictionary.microsoft
+echo "127.0.0.1 $HOSTNAME" >> /etc/hosts
+sed -i 's|#       $INCLUDE sql.conf|        $INCLUDE sql.conf|g' /etc/raddb/radiusd.conf
+sed -i 's|#       sql|        sql|g' /etc/raddb/sites-enabled/default
 
-echo '127.0.0.1 $HOSTNAME' >> /etc/hosts
+
+#Radiusclient
+ln -s /etc/radiusclient-ng /etc/radiusclient
+sed -i 's|bindaddr|#bindaddr|g' /etc/radiusclient-ng/radiusclient.conf
+echo "localhost $RADSRV_PASSWORD" >>/etc/radiusclient-ng/servers
+CP -R /usr/share/radiusclient-ng/dictionary.merit /etc/radiusclient-ng/
+cat > /etc/radiusclient/dictionary <<EOF
+INCLUDE /etc/radiusclient-ng/dictionary.microsoft
+INCLUDE /etc/radiusclient-ng/dictionary.merit
+EOF
+
  
 cat > /etc/ipsec.conf <<EOF
 version 2.0
@@ -101,8 +113,6 @@ name = l2tpd
 ;ppp debug = yes
 pppoptfile = /etc/ppp/options.xl2tpd
 length bit = yes
-plugin radius.so
-plugin radattr.so
 EOF
  
 cat > /etc/ppp/options.xl2tpd <<EOF
@@ -118,6 +128,8 @@ mtu 1280
 mru 1280
 lock
 connect-delay 5000
+plugin radius.so
+plugin radattr.so
 EOF
  
 cat > /etc/ppp/chap-secrets <<EOF
