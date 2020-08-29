@@ -33,10 +33,8 @@ password=$MYSQL_PASSWORD
 EOF
 
 #Radius
-#mysql -e "create database radius default character set utf8;"
-#mysql -e "grant all privileges on radius.* to radius@localhost identified by '$RAD_PASSWORD';"
-#mysql -e "grant all privileges on radius.* to radius@'%' identified by '$RAD_PASSWORD';"
-#mysql radius < /etc/raddb/sql/mysql/schema.sql
+mysql -uroot -p$MYSQL_PASSWORD -e "create database radius default character set utf8; grant all privileges on radius.* to radius@localhost identified by '$RAD_PASSWORD'; grant all privileges on radius.* to radius@'%' identified by '$RAD_PASSWORD';"
+mysql -uroot -p$MYSQL_PASSWORD radius < /etc/raddb/sql/mysql/schema.sql
 sed -i 's|radpass|'$RAD_PASSWORD'|g' /etc/raddb/sql.conf
 sed -i 's|testing123|'$RADSRV_PASSWORD'|g' /etc/raddb/clients.conf
 wget https://www.dmosk.ru/files/dictionary.microsoft -O /usr/share/freeradius/dictionary.microsoft
@@ -153,12 +151,6 @@ echo 1 > /proc/sys/net/ipv4/ip_forward
 exit 0
 EOF
 
-mysql -e "create database radius default character set utf8;"
-mysql -e "grant all privileges on radius.* to radius@localhost identified by '$RAD_PASSWORD';"
-mysql -e "grant all privileges on radius.* to radius@'%' identified by '$RAD_PASSWORD';"
-mysql radius < /etc/raddb/sql/mysql/schema.sql
-
- 
 service ipsec start
 service xl2tpd start
 service radiusd start
