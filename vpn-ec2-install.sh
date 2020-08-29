@@ -39,8 +39,8 @@ sed -i 's|radpass|'$RAD_PASSWORD'|g' /etc/raddb/sql.conf
 sed -i 's|testing123|'$RADSRV_PASSWORD'|g' /etc/raddb/clients.conf
 wget https://www.dmosk.ru/files/dictionary.microsoft -O /usr/share/freeradius/dictionary.microsoft
 echo "127.0.0.1 $HOSTNAME" >> /etc/hosts
-sed -i 's|#       $INCLUDE sql.conf|        $INCLUDE sql.conf|g' /etc/raddb/radiusd.conf
-sed -i 's|#       sql|        sql|g' /etc/raddb/sites-enabled/default
+sed -i 's|#[[:space:]]$INCLUDE sql.conf|        $INCLUDE sql.conf|g' /etc/raddb/radiusd.conf
+sed -i 's|#[[:space:]]sql|        sql|g' /etc/raddb/sites-enabled/default
 
 
 #Radiusclient
