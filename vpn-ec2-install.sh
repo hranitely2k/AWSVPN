@@ -33,6 +33,7 @@ password=$MYSQL_PASSWORD
 EOF
 
 #Radius
+sleep 60
 mysql -e "create database radius default character set utf8;"
 mysql -e "grant all privileges on radius.* to radius@localhost identified by '$RAD_PASSWORD';"
 mysql -e "grant all privileges on radius.* to radius@'%' identified by '$RAD_PASSWORD';"
