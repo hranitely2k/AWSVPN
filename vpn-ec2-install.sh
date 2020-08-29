@@ -33,11 +33,10 @@ password=$MYSQL_PASSWORD
 EOF
 
 #Radius
-sleep 60
-mysql -e "create database radius default character set utf8;"
-mysql -e "grant all privileges on radius.* to radius@localhost identified by '$RAD_PASSWORD';"
-mysql -e "grant all privileges on radius.* to radius@'%' identified by '$RAD_PASSWORD';"
-mysql radius < /etc/raddb/sql/mysql/schema.sql
+#mysql -e "create database radius default character set utf8;"
+#mysql -e "grant all privileges on radius.* to radius@localhost identified by '$RAD_PASSWORD';"
+#mysql -e "grant all privileges on radius.* to radius@'%' identified by '$RAD_PASSWORD';"
+#mysql radius < /etc/raddb/sql/mysql/schema.sql
 sed -i 's|radpass|'$RAD_PASSWORD'|g' /etc/raddb/sql.conf
 sed -i 's|testing123|'$RADSRV_PASSWORD'|g' /etc/raddb/clients.conf
 wget https://www.dmosk.ru/files/dictionary.microsoft -O /usr/share/freeradius/dictionary.microsoft
@@ -50,7 +49,8 @@ sed -i 's|#       sql|        sql|g' /etc/raddb/sites-enabled/default
 ln -s /etc/radiusclient-ng /etc/radiusclient
 sed -i 's|bindaddr|#bindaddr|g' /etc/radiusclient-ng/radiusclient.conf
 echo "localhost $RADSRV_PASSWORD" >>/etc/radiusclient-ng/servers
-CP -R /usr/share/radiusclient-ng/dictionary.merit /etc/radiusclient-ng/
+cp /usr/share/radiusclient-ng/dictionary.merit /etc/radiusclient-ng/
+wget https://www.dmosk.ru/files/dictionary.microsoft -O /etc/radiusclient-ng/dictionary.microsoft
 cat > /etc/radiusclient/dictionary <<EOF
 INCLUDE /etc/radiusclient-ng/dictionary.microsoft
 INCLUDE /etc/radiusclient-ng/dictionary.merit
@@ -152,6 +152,12 @@ iptables-restore < /etc/iptables.rules
 echo 1 > /proc/sys/net/ipv4/ip_forward
 exit 0
 EOF
+
+mysql -e "create database radius default character set utf8;"
+mysql -e "grant all privileges on radius.* to radius@localhost identified by '$RAD_PASSWORD';"
+mysql -e "grant all privileges on radius.* to radius@'%' identified by '$RAD_PASSWORD';"
+mysql radius < /etc/raddb/sql/mysql/schema.sql
+
  
 service ipsec start
 service xl2tpd start
