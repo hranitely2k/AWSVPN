@@ -2,9 +2,7 @@
 # Please define your own values for those variables
 yum install -y --enablerepo=epel pwgen
 
-IPSEC_PSK=SharedSecret
-VPN_USER=username
-VPN_PASSWORD=password
+IPSEC_PSK=weiquee6weiquaiQuieH
 MYSQL_PASSWORD=$(pwgen -B 12 1)
 RAD_PASSWORD=$(pwgen -B 12 1)
 HOSTNAME=$(hostname)
@@ -134,8 +132,6 @@ EOF
 cat > /etc/ppp/chap-secrets <<EOF
 # Secrets for authentication using CHAP
 # client server secret IP addresses
- 
-$VPN_USER l2tpd $VPN_PASSWORD *
 EOF
  
 iptables -t nat -A POSTROUTING -s 10.0.10.0/24 -o eth0 -j MASQUERADE
